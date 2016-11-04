@@ -14,23 +14,26 @@ ENV TERM linux
 # Work around initramfs-tools running on kernel 'upgrade': <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594189>
 ENV INITRD No
 
-ENV AZK_VERSION 2.5.0
-ENV MYSQL_JDBC_VERSION 5.1.35
+ENV AZK_VERSION 3.6.0
+#ENV MYSQL_JDBC_VERSION 5.1.40
 
 WORKDIR /root
+
+COPY bin/azkaban-web-server-$AZK_VERSION.tar.gz /root/azkaban-web-server-$AZK_VERSION.tar.gz
 
 RUN apt-get update -yqq \
     && apt-get install -yqq \
     curl \
     netcat \
     mysql-client \
-    && curl -sLk https://s3.amazonaws.com/azkaban2/azkaban2/$AZK_VERSION/azkaban-web-server-$AZK_VERSION.tar.gz| tar xz \
-    && curl -sLk http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-$MYSQL_JDBC_VERSION.tar.gz| tar xz \
-    && mv mysql-connector-java-$MYSQL_JDBC_VERSION/mysql-connector-java-$MYSQL_JDBC_VERSION-bin.jar azkaban-web-$AZK_VERSION/extlib/ \
-    && rm -rf mysql-connector-java-$MYSQL_JDBC_VERSION \
-    && mkdir azkaban-web-$AZK_VERSION/logs/ \
+    && tar xfz azkaban-web-server-$AZK_VERSION.tar.gz \
+    #&& curl -sLk https://s3-eu-west-1.amazonaws.com/ci-rtlambda/dist/azkaban/azkaban-web-server-$AZK_VERSION.tar.gz | tar xz \    
+    #&& curl -sLk http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-$MYSQL_JDBC_VERSION.tar.gz| tar xz \
+    #&& mv mysql-connector-java-$MYSQL_JDBC_VERSION/mysql-connector-java-$MYSQL_JDBC_VERSION-bin.jar azkaban-web-server-$AZK_VERSION/lib/ \
+    #&& rm -rf mysql-connector-java-$MYSQL_JDBC_VERSION \
+    && mkdir azkaban-web-server-$AZK_VERSION/logs/ \
     # Work around to run container as a daemon
-    && sed -i "s/&//" azkaban-web-$AZK_VERSION/bin/azkaban-web-start.sh \
+    && sed -i "s/&//" azkaban-web-server-$AZK_VERSION/bin/azkaban-web-start.sh \
     && apt-get clean \
     && rm -rf \
     /var/lib/apt/lists/* \
@@ -40,14 +43,15 @@ RUN apt-get update -yqq \
     /usr/share/doc \
     /usr/share/doc-base
 
-ADD keystore azkaban-web-$AZK_VERSION/keystore
-ADD conf/azkaban.properties azkaban-web-$AZK_VERSION/conf/azkaban.properties
+ADD keystore azkaban-web-server-$AZK_VERSION/keystore
+ADD conf/azkaban.properties azkaban-web-server-$AZK_VERSION/conf/azkaban.properties
+ADD bin/create-all-sql-$AZK_VERSION.sql /root/create-all-sql-$AZK_VERSION.sql  
 
 # Azkaban web server port
 EXPOSE 8443
 
 # Define default workdir
-WORKDIR /root/azkaban-web-$AZK_VERSION
+WORKDIR /root/azkaban-web-server-$AZK_VERSION
 ADD script/run.sh run.sh
 RUN chmod +x run.sh
 

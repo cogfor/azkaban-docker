@@ -1,7 +1,7 @@
 #!/bin/sh
 # Wait for database to get available
 
-AZK_VERSION="2.5.0"
+AZK_VERSION="3.6.0"
 
 DB_LOOPS="20"
 MYSQL_HOST="mariadb"
@@ -21,11 +21,11 @@ while ! nc $MYSQL_HOST $MYSQL_PORT >/dev/null 2>&1 < /dev/null; do
 done
 
 # initialize azkaban db
-echo "download azkaban sql script"
-curl -sLk http://s3.amazonaws.com/azkaban2/azkaban2/$AZK_VERSION/azkaban-sql-script-$AZK_VERSION.tar.gz| tar xz
+#echo "download azkaban sql script"
+#curl -sLk http://s3.amazonaws.com/azkaban2/azkaban2/$AZK_VERSION/azkaban-sql-script-$AZK_VERSION.tar.gz| tar xz
 echo "import azkaban create-all-sql.sql to $MYSQL_HOST"
-mysql -h $MYSQL_HOST -uazkaban -pazkaban azkaban < azkaban-$AZK_VERSION/create-all-sql-$AZK_VERSION.sql
-rm -rf azkaban-$AZK_VERSION/
+mysql -h $MYSQL_HOST -uazkaban -pazkaban azkaban < /root/create-all-sql-$AZK_VERSION.sql
+#rm -rf azkaban-$AZK_VERSION/
 
 #start the daemon
 exec $START_CMD
